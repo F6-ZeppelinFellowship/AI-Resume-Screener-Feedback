@@ -1,16 +1,30 @@
-# Virtual Environment
-venv/
-.venv/
-
 # Python
+.venv/
+venv/
+env/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
 
-# Environment Variables
+# Environment files
 .env
+.env.*
+!.env.example
 
-# VS Code
+# Node / Frontend
+node_modules/
+.next/
+dist/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
 .vscode/
-
-# PyCharm
 .idea/
