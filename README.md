@@ -33,12 +33,10 @@ Our core learning objective is to implement **structured JSON prompting** so the
 
 ---
 
-## 🏗️ Architecture (Current + Adjustable)
-
-> We can refine stack choices as implementation progresses.
+## 🏗️ Architecture (Final Stack)
 
 ### Frontend Layer
-- **Streamlit** (current baseline) *or* **Next.js** (optional upgrade)
+- **Next.js**
 - Handles:
   - Resume upload
   - Job description input
@@ -54,7 +52,7 @@ Our core learning objective is to implement **structured JSON prompting** so the
   - LLM response validation + retry logic
 
 ### LLM Layer
-- **OpenAI API**
+- **Gemini API**
 - Uses strict structured output format (JSON schema aligned)
 
 ### Project Constraint
@@ -132,13 +130,13 @@ Our core learning objective is to implement **structured JSON prompting** so the
    Implement PDF/DOCX extraction and sanitization.
 
 4. **Structured LLM Evaluation**  
-   Integrate OpenAI with strict JSON response schema.
+   Integrate Gemini API with strict JSON response schema.
 
 5. **Safety & Retry Logic**  
    Add parse validation, one-pass retry, graceful error fallback.
 
 6. **UI Integration**  
-   Connect frontend to backend and render final feedback dashboard.
+   Connect Next.js frontend to backend and render final feedback dashboard.
 
 ---
 
@@ -154,28 +152,54 @@ Our core learning objective is to implement **structured JSON prompting** so the
 
 ## 🛠️ Technologies
 
-- Python
-- Streamlit
 - FastAPI
-- OpenAI API
+- Gemini API
+- Next.js
+- Python
+- TypeScript
+- Tailwind CSS (UI styling)
 
 ---
 
 ## ⚙️ Installation
 
+### Backend
 ```bash
+cd backend
 pip install -r requirements.txt
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
 ```
 
 ---
 
 ## ▶️ Run
 
+### Start Backend (FastAPI)
 ```bash
-python app.py
+cd backend
+uvicorn main:app --reload
 ```
 
-> If backend/frontend are split later, this section will be updated with separate run commands.
+### Start Frontend (Next.js)
+```bash
+cd frontend
+npm run dev
+```
+
+---
+
+## 🔐 Environment Variables
+
+Create `backend/.env`:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+```
 
 ---
 
