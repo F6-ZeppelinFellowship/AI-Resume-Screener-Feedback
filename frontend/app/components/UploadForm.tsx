@@ -78,6 +78,7 @@ export default function UploadForm() {
           onChange={(e) => {
             const selected = e.target.files?.[0];
             if (selected) validateAndSetFile(selected);
+            e.currentTarget.value = "";
           }}
         />
         {file ? (
