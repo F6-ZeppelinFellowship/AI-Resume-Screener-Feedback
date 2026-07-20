@@ -40,7 +40,7 @@ export default function UploadForm() {
   function handleSubmit() {
     if (!file || !jobDescription.trim()) return;
     setStatus("loading");
-    // TODO Day 4: replace with real fetch to FastAPI /api/analyze
+    // TODO: Replace with a real fetch to FastAPI /api/analyze
     setTimeout(() => setStatus("success"), 1500);
   }
 
