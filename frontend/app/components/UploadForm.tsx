@@ -96,7 +96,10 @@ export default function UploadForm() {
       {/* Job description */}
       <textarea
         value={jobDescription}
-        onChange={(e) => setJobDescription(e.target.value)}
+        onChange={(e) => {
+          setJobDescription(e.target.value);
+          if (status !== "idle") setStatus("idle");
+        }}
         placeholder="Paste the target job description here..."
         rows={8}
         disabled={status === "loading"}
