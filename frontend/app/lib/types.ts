@@ -1,5 +1,5 @@
 // Shared data contract with the backend.
-// Must match the Pydantic schema Member 1 defines.
+// Must match the backend's Pydantic AnalysisResult schema.
 
 export interface AnalysisResult {
   match_score: number;
