@@ -15,8 +15,17 @@ export default function UploadForm() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   function validateAndSetFile(selected: File) {
+    // Reset status so the UI doesn't keep showing a stale success/error message after changing inputs.
+    setStatus("idle");
+
     const ext = "." + selected.name.split(".").pop()?.toLowerCase();
-    if (!ACCEPTED_TYPES.includes(ext)) {
+    const allowedMimes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    const mimeOk = !selected.type || allowedMimes.includes(selected.type);
+
+    if (!ACCEPTED_TYPES.includes(ext) || !mimeOk) {
       setFileError("Only PDF or DOCX files are allowed.");
       setFile(null);
       return;
