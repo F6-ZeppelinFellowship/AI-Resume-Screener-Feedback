@@ -64,7 +64,7 @@ export default function UploadForm() {
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf,.docx"
+          accept={ACCEPTED_TYPES.join(",")}
           className="hidden"
           onChange={(e) => {
             const selected = e.target.files?.[0];
