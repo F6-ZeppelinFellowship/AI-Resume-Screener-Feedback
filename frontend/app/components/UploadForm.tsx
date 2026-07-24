@@ -5,6 +5,13 @@ import { UploadCloud, FileText, X, Loader2 } from "lucide-react";
 import Dashboard from "./Dashboard";
 import type { AppStatus } from "../lib/types";
 
+// Schema expected from FastAPI endpoint
+export interface EvaluationResult {
+  match_score: number;
+  missing_keywords: string[];
+  suggestions: string[];
+}
+
 const ACCEPTED_TYPES = [".pdf", ".docx"];
 const ACCEPT_ATTR = ACCEPTED_TYPES.join(",");
 const MAX_SIZE_MB = 5;
@@ -20,12 +27,19 @@ export default function UploadForm() {
   const [jobDescription, setJobDescription] = useState("");
   const [status, setStatus] = useState<AppStatus>("idle");
   const [fileError, setFileError] = useState("");
+  const [apiError, setApiError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Store live evaluation results from backend
+  const [analysisResult, setAnalysisResult] = useState<EvaluationResult | null>(null);
+  
   const inputRef = useRef<HTMLInputElement>(null);
 
   function validateAndSetFile(selected: File) {
-    // Reset stale success state when inputs change
-    if (status === "success") setStatus("idle");
+    if (status === "success") {
+      setStatus("idle");
+      setAnalysisResult(null);
+    }
     const ext = "." + selected.name.split(".").pop()?.toLowerCase();
     if (!ACCEPTED_TYPES.includes(ext)) {
       setFileError("Only PDF or DOCX files are allowed.");
@@ -38,6 +52,7 @@ export default function UploadForm() {
       return;
     }
     setFileError("");
+    setApiError("");
     setFile(selected);
   }
 
@@ -57,15 +72,39 @@ export default function UploadForm() {
   function removeFile(e: React.MouseEvent) {
     e.stopPropagation();
     setFile(null);
+    setAnalysisResult(null);
     if (status === "success") setStatus("idle");
     if (inputRef.current) inputRef.current.value = "";
   }
 
-  function handleSubmit() {
-    if (!file || !jobDescription.trim()) return;
+  async function handleSubmit() {
+    if (!file || !jobDescription.trim() || status === "loading") return;
+
     setStatus("loading");
-    // TODO: replace mock with real fetch to FastAPI /api/analyze
-    setTimeout(() => setStatus("success"), 1500);
+    setApiError("");
+
+    const formData = new FormData();
+    formData.append("resume", file);
+    formData.append("job_description", jobDescription);
+
+    try {
+      const response = await fetch("http://localhost:8000/api/analyze", {
+        method: "POST",
+        body: formData, // Do NOT manually set 'Content-Type' header; browser sets boundary
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.detail || "Failed to analyze resume. Please try again.");
+      }
+
+      const data: EvaluationResult = await response.json();
+      setAnalysisResult(data);
+      setStatus("success");
+    } catch (err: any) {
+      setStatus("error");
+      setApiError(err.message || "An unexpected error occurred");
+    }
   }
 
   const canSubmit =
@@ -116,7 +155,6 @@ export default function UploadForm() {
                 onChange={(e) => {
                   const selected = e.target.files?.[0];
                   if (selected) validateAndSetFile(selected);
-                  // Allow re-selecting the same file
                   e.target.value = "";
                 }}
               />
@@ -168,7 +206,10 @@ export default function UploadForm() {
             <textarea
               value={jobDescription}
               onChange={(e) => {
-                if (status === "success") setStatus("idle");
+                if (status === "success") {
+                  setStatus("idle");
+                  setAnalysisResult(null);
+                }
                 setJobDescription(e.target.value);
               }}
               placeholder="Paste the full job description here..."
@@ -181,13 +222,20 @@ export default function UploadForm() {
           </div>
         </div>
 
-        {/* Footer: action */}
+        {/* Footer: action & errors */}
         <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4">
-          <p className="text-xs text-slate-500">
-            {status === "success"
-              ? "Analysis complete (mock data shown below)."
-              : "Your resume is analyzed against the job description."}
-          </p>
+          <div className="flex-1 pr-4">
+            {apiError ? (
+              <p className="text-xs font-medium text-red-600">{apiError}</p>
+            ) : (
+              <p className="text-xs text-slate-500">
+                {status === "success"
+                  ? "Analysis complete!"
+                  : "Your resume is analyzed against the job description."}
+              </p>
+            )}
+          </div>
+
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
@@ -199,10 +247,10 @@ export default function UploadForm() {
         </div>
       </div>
 
-      {/* Results dashboard, shown after analysis */}
-      {status === "success" && (
+      {/* Live Results Dashboard */}
+      {status === "success" && analysisResult && (
         <div className="mt-8">
-          <Dashboard />
+          <Dashboard data={analysisResult} />
         </div>
       )}
     </div>
