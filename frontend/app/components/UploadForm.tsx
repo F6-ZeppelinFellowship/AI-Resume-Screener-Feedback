@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { UploadCloud, FileText, X, Loader2 } from "lucide-react";
+import Dashboard from "./Dashboard";
 import type { AppStatus } from "../lib/types";
 
 const ACCEPTED_TYPES = [".pdf", ".docx"];
@@ -184,7 +185,7 @@ export default function UploadForm() {
         <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4">
           <p className="text-xs text-slate-500">
             {status === "success"
-              ? "Analysis complete (mock). Dashboard renders here."
+              ? "Analysis complete (mock data shown below)."
               : "Your resume is analyzed against the job description."}
           </p>
           <button
@@ -197,6 +198,13 @@ export default function UploadForm() {
           </button>
         </div>
       </div>
+
+      {/* Results dashboard, shown after analysis */}
+      {status === "success" && (
+        <div className="mt-8">
+          <Dashboard />
+        </div>
+      )}
     </div>
   );
 }
