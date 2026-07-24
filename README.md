@@ -148,7 +148,7 @@ Our core learning objective is to implement **structured JSON prompting** so the
 - Ifra Ahmed  
 - Kaneeza Batool  
 - Hasana  
-- Hajira Azfar  
+  
 
 ---
 
@@ -157,7 +157,7 @@ Our core learning objective is to implement **structured JSON prompting** so the
 - Python
 - Streamlit
 - FastAPI
-- OpenAI API
+- OpenRouter API
 
 ---
 
