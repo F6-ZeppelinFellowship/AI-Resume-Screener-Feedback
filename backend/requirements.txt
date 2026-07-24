@@ -6,3 +6,4 @@ python-multipart
 pdfplumber
 docx2txt
 python-dotenv
+openai

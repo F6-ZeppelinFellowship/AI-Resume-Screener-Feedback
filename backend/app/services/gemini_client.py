@@ -1,89 +1,64 @@
 import os
-from pathlib import Path
+import json
 
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
 from app.schemas.evaluation import ResumeEvaluation
 
 
-# --------------------------------------------------
-# Load environment variables
-# --------------------------------------------------
-
-BASE_DIR = Path(__file__).resolve().parents[2]
-ENV_PATH = BASE_DIR / ".env"
-
-load_dotenv(dotenv_path=ENV_PATH)
+load_dotenv()
 
 
-API_KEY = os.getenv("GEMINI_API_KEY")
+API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 
 if not API_KEY:
     raise RuntimeError(
-        f"GEMINI_API_KEY not found. Expected .env at: {ENV_PATH}"
+        "OPENROUTER_API_KEY not found in .env"
     )
 
 
-# --------------------------------------------------
-# Gemini Client
-# --------------------------------------------------
-
-client = genai.Client(
-    api_key=API_KEY
+client = OpenAI(
+    api_key=API_KEY,
+    base_url="https://openrouter.ai/api/v1"
 )
 
-
-# --------------------------------------------------
-# ATS System Instructions
-# --------------------------------------------------
 
 SYSTEM_PROMPT = """
 You are an ATS (Applicant Tracking System) Resume Evaluation Assistant.
 
-Your job is to compare a candidate resume with a job description.
+Your task:
 
-Analyze:
+Compare the candidate's resume with the provided job description.
 
-1. Skills match
-2. Experience relevance
-3. Missing technical keywords
-4. Improvement suggestions
+Return ONLY valid JSON.
 
-
-Return ONLY JSON.
-
-The output must exactly follow:
+The JSON must exactly follow this schema:
 
 {
-    "match_score": integer between 0 and 100,
-    "missing_keywords": ["keyword"],
-    "suggestions": ["suggestion"]
+    "match_score": integer (0-100),
+    "missing_keywords": [string],
+    "suggestions": [string]
 }
-
 
 Rules:
 
 - No markdown.
-- No explanations outside JSON.
-- No additional fields.
-- Suggestions must be practical.
+- No explanation.
+- No extra fields.
+- Suggestions should be practical and actionable.
 """
 
-
-# --------------------------------------------------
-# Resume Evaluation Function
-# --------------------------------------------------
 
 def evaluate_resume(
     resume_text: str,
     job_description: str,
 ) -> ResumeEvaluation:
 
+
     prompt = f"""
-Candidate Resume:
+Resume:
 
 {resume_text}
 
@@ -94,40 +69,29 @@ Job Description:
 """
 
 
-    try:
+    response = client.chat.completions.create(
 
-        response = client.models.generate_content(
+        model="google/gemini-2.0-flash-001",
 
-            model="gemini-2.5-flash",
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT,
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
 
-            contents=[
-                SYSTEM_PROMPT,
-                prompt,
-            ],
-
-            config=types.GenerateContentConfig(
-
-                temperature=0.2,
-
-                response_mime_type="application/json",
-
-                response_schema=ResumeEvaluation,
-
-            ),
-        )
+        temperature=0.2,
+    )
 
 
-        if response.parsed is None:
-            raise RuntimeError(
-                "Gemini returned no structured response"
-            )
+    output = response.choices[0].message.content
 
 
-        return response.parsed
+    result = json.loads(output)
 
 
-    except Exception as e:
-
-        raise RuntimeError(
-            f"Gemini evaluation failed: {str(e)}"
-        )
+    return ResumeEvaluation(**result)
