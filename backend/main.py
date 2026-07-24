@@ -23,22 +23,36 @@ ALLOWED_MIME_TYPES = {
 # PARALLEL BUILD INTERFACE
 # This mimics Member 1's logic so you can test your code immediately.
 # =====================================================================
-class MockGeminiEvaluator:
-    async def __call__(self, resume_text: str, job_description: str) -> dict:
-        # Returns the exact payload contract Member 3 and 4 expect
-        return {
-            "match_score": 82,
-            "missing_keywords": ["FastAPI", "Asynchronous Programming", "Data Sanitization"],
-            "suggestions": [
-                "Excellent parsing extraction structure detected.",
-                "Ensure your endpoints use dependency injection to decouple parallel feature branches."
-            ]
-        }
+# =====================================================================
+# GEMINI EVALUATOR INTERFACE
+# Connected with Member 1 Gemini ATS Analyzer
+# =====================================================================
 
-# Fallback engine used during development. 
-# On Tuesday, change this line to: get_evaluator = Member1GeminiEvaluator()
+from app.services.gemini_client import evaluate_resume
+
+
+class GeminiEvaluator:
+
+    async def __call__(
+        self,
+        resume_text: str,
+        job_description: str
+    ) -> dict:
+
+        result = evaluate_resume(
+            resume_text=resume_text,
+            job_description=job_description
+        )
+
+        return result.model_dump()
+
+
+# Dependency Injection
 def get_evaluator():
-    return MockGeminiEvaluator()
+
+    return GeminiEvaluator()
+
+# =====================================================================
 # =====================================================================
 
 @app.post("/api/analyze", status_code=status.HTTP_200_OK)
