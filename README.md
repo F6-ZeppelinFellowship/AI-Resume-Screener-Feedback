@@ -52,7 +52,7 @@ Our core learning objective is to implement **structured JSON prompting** so the
   - LLM response validation + retry logic
 
 ### LLM Layer
-- **Gemini API**
+- **Openrouter API**
 - Uses strict structured output format (JSON schema aligned)
 
 ### Project Constraint
@@ -146,14 +146,14 @@ Our core learning objective is to implement **structured JSON prompting** so the
 - Ifra Ahmed  
 - Kaneeza Batool  
 - Hasana  
-- Hajira Azfar  
+  
 
 ---
 
 ## 🛠️ Technologies
 
 - FastAPI
-- Gemini API
+- OpenRouter API
 - Next.js
 - Python
 - TypeScript
